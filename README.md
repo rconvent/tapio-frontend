@@ -1,13 +1,10 @@
 # Getting Started with Create React App
 
-
-
 ## Features
 
 * Get comment post from https://jsonplaceholder.typicode.com/
   * Create, Edit, delete and update post.
 * Since it's a fake API we use localstorage to keep the updated/created post data (reload of the page will loose all changes).
-
 
 ## Available Scripts
 
@@ -30,7 +27,5 @@ The build is minified and the filenames include the hashes.
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

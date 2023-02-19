@@ -13,7 +13,7 @@ const ListPostComponent = () => {
   const [posts, setPosts] = useState<Array<Post>>([]);
   const [users, setUsers] = useState<Array<User>>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [postId, setPostId] = useState<string | undefined>();
+  const [postId, setPostId] = useState<number | undefined>();
 
   useEffect(() => {
     const fetchData = () => {
@@ -38,16 +38,15 @@ const ListPostComponent = () => {
     setPostId(undefined);
   };
 
-  const handleEdit = (id: string | undefined) => {
+  const handleEdit = (id: number | undefined) => {
     setShowModal(true);
     setPostId(id);
   };
 
-  const handleDelete = (id: string | undefined) => {
+  const handleDelete = (id: number | undefined) => {
     PostService.deletePost(id).then((response: { ok: boolean }) => {
       if (response.ok) {
         toast.success("Comment Deleted");
-        // fake delete so we filter list but we should redo a get posts call
         const filteredPosts = posts.filter((post) => post.id !== id);
         setPosts(filteredPosts);
       } else {
@@ -59,9 +58,9 @@ const ListPostComponent = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setPostId(undefined);
-    const items = localStorage.getItem("posts");
-    if (items) {
-      setPosts(JSON.parse(items));
+    const posts = localStorage.getItem("posts");
+    if (posts) {
+      setPosts(JSON.parse(posts));
     }
   };
 

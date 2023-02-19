@@ -6,7 +6,7 @@ import { Post, User } from "../types/postTypes";
 import toast from "react-hot-toast";
 
 type UpdatePostComponentProps = {
-  postId: string | undefined;
+  postId: number | undefined;
   onClose: () => void;
   users: User[];
 };
@@ -19,16 +19,28 @@ function UpdatePostComponent(props: UpdatePostComponentProps) {
     id: undefined,
   });
 
-
   useEffect(() => {
     if (props.postId) {
-      PostService.getPostById(props.postId)
-        .then((response: { json: () => any }) => response.json())
-        .then((postData: Post) => setPost(postData));
+      PostService.getPostById(props.postId).then((response: any) => {
+        if (response.ok) {
+          return setPost(response.json());
+        } else {
+          const posts = localStorage.getItem("posts");
+          const postsParsed = posts !== null ? JSON.parse(posts) : [];
+          const postIndex = postsParsed.findIndex(
+            (post: Post) => post.id === props.postId
+          );
+          if (postIndex !== null) {
+            setPost(postsParsed[postIndex]);
+          } else {
+            toast.error("Post Id not found");
+          }
+        }
+      });
     }
   }, [props.postId]);
 
-  const handleUpdate = (post: Post, postId: string | undefined) => {
+  const handleUpdate = (post: Post, postId: number | undefined) => {
     if (!post.body || !post.title) {
       toast.error("Title and text can't be empty");
     } else {
@@ -62,10 +74,14 @@ function UpdatePostComponent(props: UpdatePostComponentProps) {
             return response.json();
           })
           .then((postData: Post) => {
+            if (postData.id) {
+              postData.id = 100 + Math.floor(Math.random() * 1000); // give random id since it always return 101
+            }
             const items = localStorage.getItem("posts");
             const newPosts =
               items !== null ? [postData, ...JSON.parse(items)] : [postData];
             localStorage.setItem("posts", JSON.stringify(newPosts));
+            window.dispatchEvent(new Event("storage"));
           });
       }
       props.onClose();
