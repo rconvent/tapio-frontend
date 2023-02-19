@@ -7,8 +7,9 @@ import toast from "react-hot-toast";
 
 type UpdatePostComponentProps = {
   postId: number | undefined;
-  onClose: () => void;
   users: User[];
+  onClose: () => void;
+  handleUpdate: (post: Post, postId: number | undefined) => void;
 };
 
 function UpdatePostComponent(props: UpdatePostComponentProps) {
@@ -21,72 +22,24 @@ function UpdatePostComponent(props: UpdatePostComponentProps) {
 
   useEffect(() => {
     if (props.postId) {
+      // first check the local storage
+      const posts = localStorage.getItem("posts");
+      const postsParsed = posts !== null ? JSON.parse(posts) : [];
+      const postIndex = postsParsed.findIndex(
+        (post: Post) => post.id === props.postId
+      );
+      if (postIndex !== null) {
+        return setPost(postsParsed[postIndex]);
+      }
+      // if id not find in localstorage
       PostService.getPostById(props.postId).then((response: any) => {
         if (response.ok) {
           return setPost(response.json());
-        } else {
-          const posts = localStorage.getItem("posts");
-          const postsParsed = posts !== null ? JSON.parse(posts) : [];
-          const postIndex = postsParsed.findIndex(
-            (post: Post) => post.id === props.postId
-          );
-          if (postIndex !== null) {
-            setPost(postsParsed[postIndex]);
-          } else {
-            toast.error("Post Id not found");
-          }
         }
       });
+      toast.error("Post Id not found");
     }
   }, [props.postId]);
-
-  const handleUpdate = (post: Post, postId: number | undefined) => {
-    if (!post.body || !post.title) {
-      toast.error("Title and text can't be empty");
-    } else {
-      if (postId) {
-        PostService.updatePost(post, postId)
-          .then((response: any) => {
-            if (response.ok) {
-              toast.success("Comment Updated");
-            }
-            return response.json();
-          })
-          .then((postData: Post) => {
-            const posts = localStorage.getItem("posts");
-            const postsParsed = posts !== null ? JSON.parse(posts) : [];
-            const postIndex = postsParsed.findIndex(
-              (post: Post) => post.id === postId
-            );
-            if (postIndex !== null) {
-              postsParsed[postIndex] = postData;
-              localStorage.setItem("posts", JSON.stringify(postsParsed));
-            } else {
-              localStorage.setItem("posts", JSON.stringify(postsParsed));
-            }
-          });
-      } else {
-        PostService.createPost(post)
-          .then((response: any) => {
-            if (response.ok) {
-              toast.success("Comment Created");
-            }
-            return response.json();
-          })
-          .then((postData: Post) => {
-            if (postData.id) {
-              postData.id = 100 + Math.floor(Math.random() * 1000); // give random id since it always return 101
-            }
-            const items = localStorage.getItem("posts");
-            const newPosts =
-              items !== null ? [postData, ...JSON.parse(items)] : [postData];
-            localStorage.setItem("posts", JSON.stringify(newPosts));
-            window.dispatchEvent(new Event("storage"));
-          });
-      }
-      props.onClose();
-    }
-  };
 
   const handleChange = (e: BaseSyntheticEvent) => {
     setPost({
@@ -130,7 +83,7 @@ function UpdatePostComponent(props: UpdatePostComponentProps) {
             <button
               className="h-7 w-14 bg-[rgb(56_178_171)] hover:bg-[rgb(56_178_171)] text-white text-xs inline-block relative text-center font-bold border border-white rounded-md"
               onClick={() => {
-                handleUpdate(post, post.id);
+                props.handleUpdate(post, post.id);
               }}
             >
               Save

@@ -15,18 +15,35 @@ const ListPostComponent = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [postId, setPostId] = useState<number | undefined>();
 
-  useEffect(() => {
-    const fetchData = () => {
-      PostService.getPosts()
-        .then((response: { json: () => any }) => response.json())
-        .then((postData: Post[]) => setPosts(postData));
-      UserService.getUsers()
-        .then((response: { json: () => any }) => response.json())
-        .then((userData: User[]) => setUsers(userData));
-    };
+  const fetchPostData = async () => {
+    await PostService.getPosts()
+      .then((response: { json: () => any }) => response.json())
+      .then((postData: Post[]) => setPosts(postData));
+  };
 
-    fetchData();
-    setIsLoading(false);
+  const fetchUserData = async () => {
+    await UserService.getUsers()
+      .then((response: { json: () => any }) => response.json())
+      .then((userData: User[]) => setUsers(userData));
+  };
+
+  useEffect(() => {
+    // first check if data on local storage
+    const postsLocalStorage = localStorage.getItem("posts");
+    console.log(postsLocalStorage);
+    const fetchData =
+      postsLocalStorage !== null && JSON.parse(postsLocalStorage).length > 0
+        ? async () => {
+            setPosts(JSON.parse(postsLocalStorage));
+            await fetchUserData();
+          }
+        : async () => {
+            await fetchPostData();
+            await fetchUserData();
+          };
+
+    fetchData().then(() => setIsLoading(false));
+    localStorage.setItem("posts", JSON.stringify(posts));
   }, []);
 
   useEffect(() => {
@@ -61,6 +78,47 @@ const ListPostComponent = () => {
     const posts = localStorage.getItem("posts");
     if (posts) {
       setPosts(JSON.parse(posts));
+    }
+  };
+
+  const handleUpdate = async (post: Post, postId: number | undefined) => {
+    if (!post.body || !post.title) {
+      toast.error("Title and text can't be empty");
+    } else {
+      if (postId) {
+        PostService.updatePost(post, postId)
+          .then((response: any) => {
+            if (response.ok) {
+              toast.success("Comment Updated");
+            }
+            return response.json();
+          })
+          .then((postData: Post) => {
+            const newPosts = [...posts];
+            const updatedPostIndex = newPosts.findIndex(
+              (p) => p.id === postData.id
+            );
+            if (updatedPostIndex > -1) newPosts[updatedPostIndex] = postData;
+            setPosts(newPosts);
+          });
+      } else {
+        PostService.createPost(post)
+          .then((response: any) => {
+            if (response.ok) {
+              toast.success("Comment Created");
+            }
+            return response.json();
+          })
+          .then((postData: Post) => {
+            if (postData.id) {
+              postData.id = 100 + Math.floor(Math.random() * 1000); // give random id since it always return 101
+            }
+            const newPosts = [postData, ...posts];
+            // newPosts.push(postData);
+            setPosts(newPosts);
+          });
+      }
+      setShowModal(false);
     }
   };
 
@@ -121,8 +179,9 @@ const ListPostComponent = () => {
           {showModal && (
             <UpdatePostComponent
               postId={postId}
-              onClose={handleCloseModal}
               users={users}
+              onClose={handleCloseModal}
+              handleUpdate={handleUpdate}
             />
           )}
         </div>
