@@ -1,8 +1,8 @@
 import { Toaster } from "react-hot-toast";
 import { BrowserRouter as Router } from "react-router-dom";
 import "./App.css";
-import HeaderComponent from "./components/headerComponent/headerComponent";
-import ListPostComponent from "./components/listPostComponent/listPostComponent";
+import HeaderComponent from "./components/headerComponent";
+import ListPostComponent from "./components/listPostComponent";
 
 function App() {
   return (
@@ -11,7 +11,7 @@ function App() {
         <Toaster
           toastOptions={{
             style: {
-              zIndex: 5,
+              zIndex: 20,
             },
           }}
           position="top-right"

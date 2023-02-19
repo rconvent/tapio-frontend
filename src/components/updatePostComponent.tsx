@@ -1,12 +1,14 @@
-import React, { BaseSyntheticEvent, useEffect, useState } from "react";
-import styles from "./updatePostComponent.module.scss";
-import PostService from "../../services/postService";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
+
+import PostService from "../services/postService";
+import { Post, User } from "../types/postTypes";
+
 import toast from "react-hot-toast";
-import { Post } from "../../types/postTypes";
 
 type UpdatePostComponentProps = {
   postId: string | undefined;
   onClose: () => void;
+  users: User[];
 };
 
 function UpdatePostComponent(props: UpdatePostComponentProps) {

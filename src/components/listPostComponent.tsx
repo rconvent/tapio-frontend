@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
-import PostService from "../../services/postService";
-import UpdatePostComponent from "../updatePostComponent/updatePostComponent";
-import plusLogo from "../../assets/plus.svg";
+
+import PostService from "../services/postService";
+import UserService from "../services/userService";
+import UpdatePostComponent from "./updatePostComponent";
+import { Post, User } from "../types/postTypes";
+import plusLogo from "../assets/plus.svg";
+
 import toast from "react-hot-toast";
-import { Post } from "../../types/postTypes";
 
 const ListPostComponent = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [posts, setPosts] = useState<Array<Post>>([]);
+  const [users, setUsers] = useState<Array<User>>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [postId, setPostId] = useState<string | undefined>();
 
@@ -16,6 +20,9 @@ const ListPostComponent = () => {
       PostService.getPosts()
         .then((response: { json: () => any }) => response.json())
         .then((postData: Post[]) => setPosts(postData));
+      UserService.getUsers()
+        .then((response: { json: () => any }) => response.json())
+        .then((userData: User[]) => setUsers(userData));
     };
 
     fetchData();
@@ -74,7 +81,12 @@ const ListPostComponent = () => {
                   key={post.id}
                   className="bg-[rgb(24_89_109)] w-96 h-96 p-5 rounded-3xl border-2 border-solid border-[rgb(56_178_171)]"
                 >
-                  <div className="text-white">User : {post.userId}</div>
+                  <div className="text-white">
+                    User :{" "}
+                    {users.filter((user) => user.id === post.userId).length > 0
+                      ? users.filter((user) => user.id === post.userId)[0].name
+                      : ""}
+                  </div>
                   <div className="block text-2xl text-center text-white h-8 text-ellipsis whitespace-nowrap overflow-hidden ml-0 mr-5 mt-5 mb-0">
                     {post.title}
                   </div>
@@ -100,7 +112,11 @@ const ListPostComponent = () => {
               ))}
           </div>
           {showModal && (
-            <UpdatePostComponent postId={postId} onClose={handleCloseModal} />
+            <UpdatePostComponent
+              postId={postId}
+              onClose={handleCloseModal}
+              users={users}
+            />
           )}
         </div>
       )}
