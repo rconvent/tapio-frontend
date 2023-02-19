@@ -44,7 +44,9 @@ const ListPostComponent = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("posts", JSON.stringify(posts));
+    if (posts.length > 0) {
+      localStorage.setItem("posts", JSON.stringify(posts));
+    }
   }, [posts]);
 
   const handleAdd = () => {

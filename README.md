@@ -4,7 +4,7 @@
 
 * Get comment post from https://jsonplaceholder.typicode.com/
   * Create, Edit, delete and update post.
-* Since it's a fake API we use localstorage to keep the updated/created post data (reload of the page will loose all changes).
+* Since it's a fake API we use localstorage to keep the updated/created post data (empty cached will loose all changes).
 
 ## Available Scripts
 
