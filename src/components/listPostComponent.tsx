@@ -30,7 +30,6 @@ const ListPostComponent = () => {
   useEffect(() => {
     // first check if data on local storage
     const postsLocalStorage = localStorage.getItem("posts");
-    console.log(postsLocalStorage);
     const fetchData =
       postsLocalStorage !== null && JSON.parse(postsLocalStorage).length > 0
         ? async () => {
@@ -41,9 +40,7 @@ const ListPostComponent = () => {
             await fetchPostData();
             await fetchUserData();
           };
-
     fetchData().then(() => setIsLoading(false));
-    localStorage.setItem("posts", JSON.stringify(posts));
   }, []);
 
   useEffect(() => {
@@ -75,10 +72,6 @@ const ListPostComponent = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setPostId(undefined);
-    const posts = localStorage.getItem("posts");
-    if (posts) {
-      setPosts(JSON.parse(posts));
-    }
   };
 
   const handleUpdate = async (post: Post, postId: number | undefined) => {
@@ -98,7 +91,9 @@ const ListPostComponent = () => {
             const updatedPostIndex = newPosts.findIndex(
               (p) => p.id === postData.id
             );
-            if (updatedPostIndex > -1) newPosts[updatedPostIndex] = postData;
+            if (updatedPostIndex > -1) {
+              newPosts[updatedPostIndex] = postData;
+            }
             setPosts(newPosts);
           });
       } else {
