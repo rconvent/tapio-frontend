@@ -29,6 +29,10 @@ const ListPostComponent = () => {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("posts", JSON.stringify(posts));
+  }, [posts]);
+
   const handleAdd = () => {
     setShowModal(true);
     setPostId(undefined);
@@ -55,6 +59,10 @@ const ListPostComponent = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setPostId(undefined);
+    const items = localStorage.getItem("posts");
+    if (items) {
+      setPosts(JSON.parse(items));
+    }
   };
 
   return (

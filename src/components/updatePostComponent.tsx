@@ -19,9 +19,10 @@ function UpdatePostComponent(props: UpdatePostComponentProps) {
     id: undefined,
   });
 
+
   useEffect(() => {
-    if (props.postId || post.id) {
-      PostService.getPostById(post.id ? post.id : props.postId)
+    if (props.postId) {
+      PostService.getPostById(props.postId)
         .then((response: { json: () => any }) => response.json())
         .then((postData: Post) => setPost(postData));
     }
@@ -29,7 +30,7 @@ function UpdatePostComponent(props: UpdatePostComponentProps) {
 
   const handleUpdate = (post: Post, postId: string | undefined) => {
     if (!post.body || !post.title) {
-      toast.error("Title and text can't be empty"); // Nice to have: use a form and validate in the fields instead, but not essential
+      toast.error("Title and text can't be empty");
     } else {
       if (postId) {
         PostService.updatePost(post, postId).then(
@@ -37,14 +38,33 @@ function UpdatePostComponent(props: UpdatePostComponentProps) {
             if (response.ok) {
               toast.success("Comment Updated");
             }
+            const posts = localStorage.getItem("posts");
+            const postsParsed = posts !== null ? JSON.parse(posts) : [];
+            const postIndex = postsParsed.findIndex(
+              (post: Post) => post.id === postId
+            );
+            if (postIndex) {
+              postsParsed[postIndex] = post;
+              localStorage.setItem("posts", JSON.stringify(postsParsed));
+            } else {
+              localStorage.setItem("posts", JSON.stringify(postsParsed));
+            }
           }
         );
       } else {
-        PostService.createPost(post).then((response: { ok: boolean }) => {
-          if (response.ok) {
-            toast.success("Comment Created");
-          }
-        });
+        PostService.createPost(post)
+          .then((response: any) => {
+            if (response.ok) {
+              toast.success("Comment Created");
+            }
+            return response.json();
+          })
+          .then((postData: Post) => {
+            const items = localStorage.getItem("posts");
+            const newPosts =
+              items !== null ? [postData, ...JSON.parse(items)] : [postData];
+            localStorage.setItem("posts", JSON.stringify(newPosts));
+          });
       }
       props.onClose();
     }
@@ -61,7 +81,12 @@ function UpdatePostComponent(props: UpdatePostComponentProps) {
     <div>
       <div className="z-10 fixed bg-[rgba(0,0,0,0.5)] flex items-center justify-center inset-0">
         <div className="flex flex-col justify-center content-between bg-[rgb(24_89_109)] w-160 h-160 p-5 rounded-3xl border-2 border-solid border-[rgb(56_178_171)]">
-          <div className="flex text-white h-5">User :{post.userId}</div>
+          <div className="flex text-white h-5">
+            User :
+            {props.users.filter((user) => user.id === post.userId).length > 0
+              ? props.users.filter((user) => user.id === post.userId)[0].name
+              : ""}
+          </div>
           <div className="flex items-center justify-center text-2xl text-center text-black h-16">
             <form>
               <textarea
