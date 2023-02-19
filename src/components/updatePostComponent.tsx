@@ -33,24 +33,26 @@ function UpdatePostComponent(props: UpdatePostComponentProps) {
       toast.error("Title and text can't be empty");
     } else {
       if (postId) {
-        PostService.updatePost(post, postId).then(
-          (response: { ok: boolean }) => {
+        PostService.updatePost(post, postId)
+          .then((response: any) => {
             if (response.ok) {
               toast.success("Comment Updated");
             }
+            return response.json();
+          })
+          .then((postData: Post) => {
             const posts = localStorage.getItem("posts");
             const postsParsed = posts !== null ? JSON.parse(posts) : [];
             const postIndex = postsParsed.findIndex(
               (post: Post) => post.id === postId
             );
-            if (postIndex) {
-              postsParsed[postIndex] = post;
+            if (postIndex !== null) {
+              postsParsed[postIndex] = postData;
               localStorage.setItem("posts", JSON.stringify(postsParsed));
             } else {
               localStorage.setItem("posts", JSON.stringify(postsParsed));
             }
-          }
-        );
+          });
       } else {
         PostService.createPost(post)
           .then((response: any) => {
