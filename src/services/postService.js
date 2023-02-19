@@ -30,4 +30,4 @@ class PostService {
   }
 }
 
-export default new PostService();
+export default PostService = new PostService();
